@@ -1,0 +1,94 @@
+C251 COMPILER V5.04b,  RTC                                                                 25/08/18  14:15:50  PAGE 1   
+
+
+C251 COMPILER V5.04b, COMPILATION OF MODULE RTC
+OBJECT MODULE PLACED IN RTC.obj
+COMPILER INVOKED BY: d:\Keil\C251\BIN\C251.EXE SRC\RTC.c XSMALL BROWSE DEBUG PRINT(.\RTC.lst) OBJECT(RTC.obj) 
+
+stmt  level    source
+
+    1          #include "RTC.h"
+    2          #include "Flash.h"
+    3          
+    4          unsigned char CDMA_Wait;//数据接收等待时间
+    5          
+    6          //===============================================
+    7          //初始化RTC
+    8          //===============================================
+    9          void RTCInit(void)
+   10          {  
+   11   1        RTC_HOLD = 0x00;                                                                //打开RTC  
+   12   1      
+   13   1        INTERVAL  = 0X41;                                                       //一秒中断一次
+   14   1        
+   15   1        YEAR_L        = g_write_value[14];                                                              //设置初始时间
+   16   1        YEAR_H        = g_write_value[13];
+   17   1        MONTH         = g_write_value[15];
+   18   1        DAY           = g_write_value[16];
+   19   1        HOUR          = g_write_value[17];
+   20   1        MINUTE        = g_write_value[18];
+   21   1        SECOND        = g_write_value[19];
+   22   1        AIE      |= RTCE;                                                               //打开RTC中断
+   23   1      }
+   24          //===============================================
+   25          //修改实时时间
+   26          //===============================================
+   27          void RTCSet(void)
+   28          {  
+   29   1        AIE      &= ~RTCE;
+   30   1        YEAR_L        = g_write_value[14];                                                              //设置初始时间
+   31   1        YEAR_H        = g_write_value[13];
+   32   1        MONTH         = g_write_value[15];
+   33   1        DAY           = g_write_value[16];
+   34   1        HOUR          = g_write_value[17];
+   35   1        MINUTE        = g_write_value[18];
+   36   1        SECOND        = g_write_value[19];
+   37   1         AIE     |= RTCE;                                                               //打开RTC中断
+   38   1      }
+   39          //===============================================
+   40          //RTC 中断
+   41          //===============================================
+   42          void INTERRUPT_RTC(void) interrupt 14
+   43          {
+   44   1        WDTEAT;
+   45   1        AIF &= ~BIT6;                                                                  //清RTC中断标志
+   46   1        CDMA_time--;
+   47   1        if(CDMA_time>0xF0) CDMA_time=0;
+   48   1        CDMA_Wait++;
+   49   1        count_time++;
+   50   1        time_Flag++;
+   51   1        if(time_Flag%2==0 && FDtime>0) FDtime--;
+   52   1      
+   53   1        g_write_value[14] = YEAR_L_DIS;
+   54   1        g_write_value[15] = MONTH_DIS;
+   55   1        g_write_value[16] = DAY_DIS;
+   56   1        g_write_value[17] = HOUR_DIS;
+   57   1        g_write_value[18] = MINUTE_DIS;
+   58   1        g_write_value[19] = SECOND_DIS;
+   59   1      }
+C251 COMPILER V5.04b,  RTC                                                                 25/08/18  14:15:50  PAGE 2   
+
+
+
+Module Information          Static   Overlayable
+------------------------------------------------
+  code size            =       363     ------
+  ecode size           =    ------     ------
+  data size            =    ------     ------
+  idata size           =    ------     ------
+  pdata size           =    ------     ------
+  xdata size           =    ------     ------
+  xdata-const size     =    ------     ------
+  edata size           =         1     ------
+  bit size             =    ------     ------
+  ebit size            =    ------     ------
+  bitaddressable size  =    ------     ------
+  ebitaddressable size =    ------     ------
+  far data size        =    ------     ------
+  huge data size       =    ------     ------
+  const size           =    ------     ------
+  hconst size          =    ------     ------
+End of Module Information.
+
+
+C251 COMPILATION COMPLETE.  0 WARNING(S),  0 ERROR(S)

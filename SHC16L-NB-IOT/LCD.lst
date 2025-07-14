@@ -1,0 +1,337 @@
+C251 COMPILER V5.04b,  LCD                                                                 25/08/18  14:15:50  PAGE 1   
+
+
+C251 COMPILER V5.04b, COMPILATION OF MODULE LCD
+OBJECT MODULE PLACED IN LCD.obj
+COMPILER INVOKED BY: d:\Keil\C251\BIN\C251.EXE SRC\LCD.c XSMALL BROWSE DEBUG PRINT(.\LCD.lst) OBJECT(LCD.obj) 
+
+stmt  level    source
+
+    1          #include "LCD.h"
+    2          #include "sys.h"
+    3          #include "Flash.h"
+    4          
+    5          //宏定义  液晶各段对应的比特
+    6          #define a 0x08
+    7          #define b 0x80
+    8          #define c 0x20
+    9          #define d 0x10
+   10          #define e 0x02
+   11          #define f 0x04
+   12          #define g 0x40
+   13          ///#define p 0x10
+   14          //自动生成断码表
+   15          const char LCD_Tab[]={
+   16              a+b+c+d+e+f,    //0
+   17              b+c,            //1
+   18              a+b+g+e+d,      //2
+   19              a+b+g+c+d,      //3
+   20              f+g+b+c,        //4
+   21              a+f+g+c+d,      //5
+   22              a+f+g+c+d+e,    //6
+   23              a+b+c,          //7
+   24              a+b+c+d+e+f+g,  //8
+   25              a+b+f+g+c+d,    //9
+   26              f+g+e+c+d,      //b 10
+   27              a+f+e+d,        //C 11
+   28              b+c+d+e+g,      //d 12
+   29              a+f+g+e+d,      //E 13
+   30                  a+b+e+f+g,      //P 14
+   31                  a+b+c+e+f,      //n 15
+   32                  d+e+f,          //L 16
+   33                  b+c+d+e+f,      //U 17
+   34                  b+c+e+f+g,      //H 18
+   35              0x00,             //空白 19
+   36                  0x40
+   37          };
+   38          #undef a
+   39          #undef b
+   40          #undef c
+   41          #undef d
+   42          #undef e
+   43          #undef f
+   44          #undef g 
+   45          /*
+   46          LCDRAM2:第1个数字+检定；
+   47          LCDRAM3:第2个数字+单价；
+   48          LCDRAM4:第3个数字+第1个小数点~~~LCDRAM7:第6个数字+第4个小数点；
+   49          LCDRAM10：第7个数字+第5个小数点；
+   50          LCDRAM11:0x01-M;0x02-k;0x04-h;0x08-W;0x10-/h;0x20-m3；0x40-元；0x80-℃
+   51          LCDRAM12:0x01-冷量；0x02-热量；0x04-流量; 0x80-进水; 0x10-一个-; 0x20-回水；0x40-阀开; 0x80-阀关
+   52          LCDRAM13:0x01-欠压；0x02-故障; 0x04-剩余量; 0x08-已用量；0x10-已购量；0x20-请充值；0x40-
+   53          */
+   54          /*******************************************************************************
+   55          * 函  数  名      : Showopen
+   56          * 描      述      : 阀开显示
+   57          * 输      入      : 无.
+   58          * 返      回      : 无.
+   59          *******************************************************************************/
+C251 COMPILER V5.04b,  LCD                                                                 25/08/18  14:15:50  PAGE 2   
+
+   60          void ShowOpen(unsigned char time)
+   61          {
+   62   1              LCDRAM2=LCD_Tab[0];     //O
+   63   1              LCDRAM3=LCD_Tab[14]; //P
+   64   1              LCDRAM4=LCD_Tab[13]; //E
+   65   1              LCDRAM5=LCD_Tab[15]; //n
+   66   1              LCDRAM6=LCD_Tab[19];
+   67   1              LCDRAM7=LCD_Tab[19];
+   68   1              LCDRAM10=LCD_Tab[time];
+   69   1      }
+   70          /*******************************************************************************
+   71          * 函  数  名      : ShowClose
+   72          * 描      述      : 阀关显示
+   73          * 输      入      : 无.
+   74          * 返      回      : 无.
+   75          *******************************************************************************/
+   76          void ShowClose(unsigned char time)
+   77          {
+   78   1              LCDRAM2=LCD_Tab[11];    //C
+   79   1              LCDRAM3=LCD_Tab[16]; //L
+   80   1              LCDRAM4=LCD_Tab[0]; //O
+   81   1              LCDRAM5=LCD_Tab[5]; //S
+   82   1              LCDRAM6=LCD_Tab[13]; //E
+   83   1              LCDRAM7=LCD_Tab[19];
+   84   1              LCDRAM10=LCD_Tab[time];
+   85   1      }
+   86          /*******************************************************************************
+   87          * 函  数  名      : LCD_Clera
+   88          * 描      述      : 全屏显示及清屏
+   89          * 输      入      : 无.
+   90          * 返      回      : 无.
+   91          *******************************************************************************/
+   92           void LCD_Clear(unsigned char j)
+   93          {
+   94   1        LCDRAM2=LCDRAM3=LCDRAM4=LCDRAM5=LCDRAM6=LCDRAM7=
+   95   1        LCDRAM10=LCDRAM11=LCDRAM12=LCDRAM13=j;  
+   96   1      }
+   97          /*******************************************************************************
+   98          * 函  数  名      : Lcd_DisNum
+   99          * 描      述      : 数字显示
+  100          * 输      入      : 无.
+  101          * 返      回      : 无.
+  102          *******************************************************************************/
+  103          void Lcd_DisNum(unsigned char pos,unsigned char num)
+  104          {
+  105   1              switch(pos)
+  106   1              {
+  107   2                      case 0:
+  108   2                              LCDRAM2 |=LCD_Tab[num];
+  109   2                      break;
+  110   2                      case 1:
+  111   2                              LCDRAM3 |=LCD_Tab[num];
+  112   2                      break;
+  113   2                      case 2:
+  114   2                              LCDRAM4 |=LCD_Tab[num];
+  115   2                      break;
+  116   2                      case 3:
+  117   2                              LCDRAM5 |=LCD_Tab[num];
+  118   2                      break;
+  119   2                      case 4:
+  120   2                              LCDRAM6 |=LCD_Tab[num];
+  121   2                      break;
+  122   2                      case 5:
+  123   2                              LCDRAM7 |=LCD_Tab[num];
+  124   2                      break;
+  125   2                      case 6:
+C251 COMPILER V5.04b,  LCD                                                                 25/08/18  14:15:50  PAGE 3   
+
+  126   2                              LCDRAM10 |=LCD_Tab[num];
+  127   2                      break;
+  128   2              }
+  129   1      }
+  130          /*******************************************************************************
+  131          * 函  数  名      : Lcd_DisTag
+  132          * 描      述      : 液晶状态显示
+  133          * 输      入      : 无.
+  134          * 返      回      : 无.
+  135          *******************************************************************************/
+  136          void Lcd_DisTag(unsigned char pos)
+  137          {
+  138   1              switch(pos)
+  139   1              {
+  140   2                      case 0: //// 第5小数点
+  141   2                              LCDRAM4 |=0x01;
+  142   2                      break;
+  143   2                      case 1://  第4小数点
+  144   2                              LCDRAM5 |=0x01;
+  145   2                      break;
+  146   2                      case 2://  第3小数点
+  147   2                              LCDRAM6 |=0x01;
+  148   2                      break;
+  149   2                      case 3://  第2小数点
+  150   2                              LCDRAM7 |=0x01;
+  151   2                      break;
+  152   2                      case 4://  第1小数点
+  153   2                              LCDRAM10 |=0x01;
+  154   2                      break;
+  155   2                      case 5:// 剩余量
+  156   2                              LCDRAM13 =0x04;
+  157   2                      break;
+  158   2                      case 6:// 已用量
+  159   2                              LCDRAM13 =0x08;
+  160   2                      break;
+  161   2                      case 7://已购量
+  162   2                              LCDRAM13 =0x10;
+  163   2                      break;
+  164   2                      case 8://请充值
+  165   2                              LCDRAM13 |=0x20;
+  166   2                      break;
+  167   2                      case 17:// 阀开
+  168   2                              LCDRAM12 =0x40;
+  169   2                      break;
+  170   2                      case 18:// 阀关
+  171   2                              LCDRAM12 =0x80;
+  172   2                      break;
+  173   2                      case 19:// 欠压
+  174   2                              LCDRAM13 |=0x01;
+  175   2                      break;
+  176   2                      case 20:// 故障
+  177   2                              LCDRAM13 |=0x02;
+  178   2                      break;
+  179   2                      case 21:// 单价
+  180   2                              LCDRAM3 =0x01;
+  181   2                      break;
+  182   2                      case 22:// 检定
+  183   2                              LCDRAM2 =0x01;
+  184   2                      break;
+  185   2                      case 28://  m3
+  186   2                              LCDRAM11 =0x20;
+  187   2                      break;
+  188   2                      case 29://  yuan
+  189   2                              LCDRAM11 =0x40;
+  190   2                      break;
+  191   2              }
+C251 COMPILER V5.04b,  LCD                                                                 25/08/18  14:15:50  PAGE 4   
+
+  192   1      }
+  193          /*******************************************************************************
+  194          * 函  数  名      : Show
+  195          * 描      述      : 显示相关内容
+  196          * 输      入      : 无.
+  197          * 返      回      : 无.
+  198          *******************************************************************************/
+  199          void Show(void)
+  200          {        
+  201   1               unsigned char i=0,j=0;    //NO.(j)display
+  202   1           unsigned char k=0;        //
+  203   1               unsigned char h=0;
+  204   1               unsigned long mid;
+  205   1               LCD_Clear(0X00);//清屏
+  206   1               //状态显示
+  207   1               switch(showIP)
+  208   1              {
+  209   2                      case 0:  //已用水量
+  210   2                          mid=consumed_water;
+  211   2                          Lcd_DisTag(FMflag);
+  212   2                          Lcd_DisTag(28);
+  213   2                          Lcd_DisTag(6);
+  214   2                          Lcd_DisTag(4);
+  215   2                          k=5;
+  216   2                              if(lowVoltageFlag) Lcd_DisTag(19);
+  217   2                      break;
+  218   2                      case 1://表上时间
+  219   2                          Lcd_DisTag(1);
+  220   2                              if(lowVoltageFlag) Lcd_DisTag(19);
+  221   2                          Lcd_DisTag(3);
+  222   2                          Lcd_DisTag(10);
+  223   2                          for(i=0;i<3;i++){showdata[i]=(g_write_value[16-i]/16)*10+g_write_value[16-i]%16;}  showdata[3]=0x00
+             -;
+  224   2                          k=1;
+  225   2                          j=0;
+  226   2                      break;
+  227   2                      case 2://表号
+  228   2                          for(i=0;i<4;i++)
+  229   2                              {
+  230   3                                      showdata[i]=(g_write_value[0+i]/16)*10+g_write_value[0+i]%16;   
+  231   3                              } 
+  232   2                              if(lowVoltageFlag) Lcd_DisTag(19);
+  233   2                      break;
+  234   2                      case 3://电池电压
+  235   2                          mid=g_write_value[38]*2;
+  236   2                      Lcd_DisTag(3);
+  237   2                              LCDRAM2=LCD_Tab[17];
+  238   2                          k=4;
+  239   2                              if(lowVoltageFlag) Lcd_DisTag(19);
+  240   2                      break;
+  241   2                      case 4://表状态
+  242   2                          LCDRAM2 =LCD_Tab[14];
+  243   2                              LCDRAM3 =LCD_Tab[18];
+  244   2                          showdata[3]=0x00;
+  245   2                          showdata[2]=g_write_value[22]/128;
+  246   2                          showdata[1]=g_write_value[23]/128*10;
+  247   2                          showdata[0]=g_write_value[23]%32;
+  248   2                          j=2;
+  249   2                              if(lowVoltageFlag) Lcd_DisTag(19);
+  250   2                      break;
+  251   2              }
+  252   1              //数据显示
+  253   1               if((showIP<1) || showIP==3){ for(i=0;i<4;i++){showdata[i]=(uint8_t)(mid%100);mid=mid/100;} }
+  254   1                    
+  255   1                i=showdata[3-(j+1)/2]%10;
+  256   1                if(i!=0)k=0;
+C251 COMPILER V5.04b,  LCD                                                                 25/08/18  14:15:50  PAGE 5   
+
+  257   1                if(i!=0|j>=k){ Lcd_DisNum(j,i); h++;}
+  258   1                j++;
+  259   1               
+  260   1                while(j<7)
+  261   1                {
+  262   2                  i=showdata[3-(j+1)/2]/10;
+  263   2                  if(i!=0)k=0;
+  264   2                  if(i!=0|j>=k){ Lcd_DisNum(j,i); h++;}
+  265   2                  j++;
+  266   2                  
+  267   2                  i=showdata[3-(j+1)/2]%10;
+  268   2                  if(i!=0)k=0;
+  269   2                  if(i!=0|j>=k){ Lcd_DisNum(j,i); h++;}
+  270   2                  j++;
+  271   2                }      
+  272   1      }
+  273          /*******************************************************************************
+  274          * 函  数  名      : LCD_Init
+  275          * 描      述      : 初始化液晶显示
+  276          * 输      入      : 无.
+  277          * 返      回      : 无.
+  278          *******************************************************************************/
+  279          void LCD_Init(void)
+  280          {  
+  281   1        LCD_Clear(0X00);              //LCD清屏
+  282   1        //LCD驱动端口设置为输出
+  283   1        P2_DIR        = 0x00;
+  284   1        P3_DIR        = 0x00;
+  285   1        P4_DIR &=~(BIT0+BIT1+BIT2+BIT3);  
+  286   1        //端口设置为LCD驱动功能
+  287   1        P2_SEL0       = 0xFF;
+  288   1        P3_SEL0       = 0xFF; 
+  289   1        P4_SEL0       |=(BIT0+BIT1+BIT2+BIT3);
+  290   1        //寄存器配置
+  291   1        LCDCR0        = LCDDUTY_4 + LCDBIAS_3 + LCDFRQ_16K + LCDFRA_128 + LCDEN;
+  292   1        LCDCR1        = LCDBUF_0 + LCDCPEN; //LCD 最小驱动能力，电荷泵使能
+  293   1      }
+  294          
+  295          
+
+
+Module Information          Static   Overlayable
+------------------------------------------------
+  code size            =      1539     ------
+  ecode size           =    ------     ------
+  data size            =    ------     ------
+  idata size           =    ------     ------
+  pdata size           =    ------     ------
+  xdata size           =    ------     ------
+  xdata-const size     =    ------     ------
+  edata size           =    ------     ------
+  bit size             =    ------     ------
+  ebit size            =    ------     ------
+  bitaddressable size  =    ------     ------
+  ebitaddressable size =    ------     ------
+  far data size        =    ------     ------
+  huge data size       =    ------     ------
+  const size           =    ------     ------
+  hconst size          =        21     ------
+End of Module Information.
+
+
+C251 COMPILATION COMPLETE.  0 WARNING(S),  0 ERROR(S)

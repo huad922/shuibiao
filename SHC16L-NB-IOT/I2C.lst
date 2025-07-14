@@ -1,0 +1,41 @@
+C251 COMPILER V5.04b,  I2C                                                                 14/04/17  08:35:44  PAGE 1   
+
+
+C251 COMPILER V5.04b, COMPILATION OF MODULE I2C
+OBJECT MODULE PLACED IN I2C.obj
+COMPILER INVOKED BY: d:\Keil\C251\BIN\C251.EXE SRC\I2C.c XSMALL BROWSE DEBUG PRINT(.\I2C.lst) OBJECT(I2C.obj) 
+
+stmt  level    source
+
+    1          
+    2           /*******************************************************************************
+    3          * 函  数  名      : Port_Init
+    4          * 描      述      : 初始化1621状态
+    5          * 输      入      : 无.
+    6          * 返      回      : 无.
+    7          *******************************************************************************/
+*** WARNING C38 IN LINE 7 OF SRC\I2C.c: empty translation unit
+
+
+Module Information          Static   Overlayable
+------------------------------------------------
+  code size            =    ------     ------
+  ecode size           =    ------     ------
+  data size            =    ------     ------
+  idata size           =    ------     ------
+  pdata size           =    ------     ------
+  xdata size           =    ------     ------
+  xdata-const size     =    ------     ------
+  edata size           =    ------     ------
+  bit size             =    ------     ------
+  ebit size            =    ------     ------
+  bitaddressable size  =    ------     ------
+  ebitaddressable size =    ------     ------
+  far data size        =    ------     ------
+  huge data size       =    ------     ------
+  const size           =    ------     ------
+  hconst size          =    ------     ------
+End of Module Information.
+
+
+C251 COMPILATION COMPLETE.  1 WARNING(S),  0 ERROR(S)

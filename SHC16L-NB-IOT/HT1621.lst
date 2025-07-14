@@ -1,0 +1,114 @@
+C251 COMPILER V5.04b,  HT1621                                                              25/08/18  14:15:50  PAGE 1   
+
+
+C251 COMPILER V5.04b, COMPILATION OF MODULE HT1621
+OBJECT MODULE PLACED IN HT1621.obj
+COMPILER INVOKED BY: d:\Keil\C251\BIN\C251.EXE SRC\HT1621.c XSMALL BROWSE DEBUG PRINT(.\HT1621.lst) OBJECT(HT1621.obj) 
+
+stmt  level    source
+
+    1          #include "Flash.h"
+    2          #include "sys.h"
+    3          #include "LCD.h"
+    4          #include "Calculate.h"
+    5          #include "intrins.h"
+    6          
+    7          /*******************************************************************************
+    8          * 函  数  名      : Port_Init
+    9          * 描      述      : 初始化1621状态
+   10          * 输      入      : 无.
+   11          * 返      回      : 无.
+   12          *******************************************************************************/
+   13          void Port_Init(void)
+   14          {
+   15   1              //输出引脚
+   16   1              P0_DIR &=~BIT3;
+   17   1              P1_DIR &=~(BIT0+BIT1+BIT2+BIT5+BIT3+BIT4); //P2/P3  作为LCD引脚
+   18   1              P4_DIR &=~(BIT4+BIT5+BIT7);
+   19   1              P5_DIR &=~(BIT0+BIT1);
+   20   1              //输入引脚
+   21   1              P0_DIR |=(BIT1+BIT2+BIT4+BIT5+BIT6);
+   22   1              P4_DIR |=BIT6;
+   23   1              P5_DIR  |= BIT0;
+   24   1              //64Pin 无以下引脚
+   25   1          P5_DIR &=~(BIT2+BIT3+BIT4);
+   26   1              P6_DIR =P7_DIR =P8_DIR =0x00;
+   27   1              P5 &=~(BIT2+BIT3+BIT4);
+   28   1              P6=P7=P8=0x00; 
+   29   1              //预留引脚--输出低电平
+   30   1              P1 &=~(BIT0+BIT1+BIT2+BIT5+BIT3+BIT4);
+   31   1              P4 &=~(BIT5+BIT4+BIT7);
+   32   1              //相关引脚初始化
+   33   1              P0 |=BIT3;//NB_Power
+   34   1              _nop_();_nop_();
+   35   1              _nop_();_nop_();
+   36   1              //按键--输入
+   37   1          P0_INT_SEL=0x00;//P0脚 边沿触发
+   38   1              P0_EDGE_SEL=0X00;//P0脚 下降沿触发
+   39   1              P0_IE |=(BIT6+BIT5+BIT4+BIT1+BIT2);
+   40   1          //P4_INT_SEL=0x00;//P4脚 边沿触发
+   41   1              //P4_EDGE_SEL=0X00;//P4脚 下降沿触发
+   42   1              //P4_IE |=BIT6;//P4脚
+   43   1              AIE     |=PTE; 
+   44   1      }
+   45          /*******************************************************************************
+   46          按键中断函数
+   47          *******************************************************************************/
+   48          void INTERRUPT_PORT(void) interrupt 8
+   49          {
+   50   1               if(P0_IFG & BIT2)//KEY
+   51   1                {                     
+   52   2                        returntime=0;
+   53   2                        showIP++;
+   54   2                        if(showIP>4) showIP=0;
+   55   2                        if(!z) Show();
+   56   2                }
+   57   1                if(P0_IFG & BIT5)//S2
+   58   1                {                     
+   59   2                        calculate();
+C251 COMPILER V5.04b,  HT1621                                                              25/08/18  14:15:50  PAGE 2   
+
+   60   2                }
+   61   1                if(P0_IFG & BIT4)//S1
+   62   1                {                     
+   63   2                       pul_flag=1;
+   64   2                }
+   65   1                if(P0_IFG & BIT6)//S3
+   66   1                {                     
+   67   2                       
+   68   2                }
+   69   1                if(P0_IFG & BIT1)//RX中断
+   70   1                {                     
+   71   2                        RX0_flag=2;
+   72   2                }
+   73   1                if(P4_IFG & BIT6)//欠压
+   74   1                {                     
+   75   2                        //lowVoltageFlag=1;
+   76   2                }
+   77   1               P0_IFG =0x00;
+   78   1               P4_IFG =0x00;
+   79   1      }
+
+
+Module Information          Static   Overlayable
+------------------------------------------------
+  code size            =       240     ------
+  ecode size           =    ------     ------
+  data size            =    ------     ------
+  idata size           =    ------     ------
+  pdata size           =    ------     ------
+  xdata size           =    ------     ------
+  xdata-const size     =    ------     ------
+  edata size           =    ------     ------
+  bit size             =    ------     ------
+  ebit size            =    ------     ------
+  bitaddressable size  =    ------     ------
+  ebitaddressable size =    ------     ------
+  far data size        =    ------     ------
+  huge data size       =    ------     ------
+  const size           =    ------     ------
+  hconst size          =    ------     ------
+End of Module Information.
+
+
+C251 COMPILATION COMPLETE.  0 WARNING(S),  0 ERROR(S)

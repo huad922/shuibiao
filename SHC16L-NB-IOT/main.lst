@@ -1,0 +1,285 @@
+C251 COMPILER V5.04b,  main                                                                25/08/18  14:15:49  PAGE 1   
+
+
+C251 COMPILER V5.04b, COMPILATION OF MODULE main
+OBJECT MODULE PLACED IN main.obj
+COMPILER INVOKED BY: d:\Keil\C251\BIN\C251.EXE SRC\main.c XSMALL BROWSE DEBUG PRINT(.\main.lst) OBJECT(main.obj) 
+
+stmt  level    source
+
+    1          /****************************** (C) COPYRIGHT 2017 ************************
+    2          * 文  件  名      : main.C
+    3          * 作      者      : 吴新辰
+    4          *                   QQ:741470274      TEL：15298612531        
+    5          * 版      本      : V1.0
+    6          * 日      期      : 2016/01/16  
+    7          * 描      述      : 主程序
+    8                        采用AD采集接收口电压值，判断光电的导通情况。
+    9          实现功能有： 
+   10          
+   11          *******************************************************************************/
+   12          #include "sys.h"
+   13          #include "Uart.h"
+   14          #include "Flash.h"
+   15          #include "AD.h"
+   16          #include "sys.h"
+   17          #include "HT1621.h"
+   18          #include "LCD.h"
+   19          #include "intrins.h"
+   20          #include "Calculate.h"
+   21           
+   22          //===============================================
+   23          //保留区域（勿删）
+   24          //===============================================
+   25          unsigned char code reserved_trap[6] _at_ 0x7A;
+   26          unsigned char code flashlockbit_reserve[8] _at_ 0x86= {0xff,0xff,0xff,0xff,0xff,0xff,0xff,0xff};         
+             -   
+   27          unsigned int code password_reserve[0x08] _at_ 0x90={0xffff,0xffff,0xffff,0xffff,0xffff,0xffff,0xffff,0xff
+             -ff};
+   28          
+   29          /*******************************************************************************
+   30          * 函  数  名      : Meter_Time
+   31          * 描      述      : 数据计算，后显示
+   32          * 输      入      : 无
+   33          * 返      回      : 无.
+   34          *******************************************************************************/
+   35          void Meter_Time(void)
+   36          {
+   37   1      //*************************数据冻结***********************************/
+   38   1      /********************一小时一次、最多48条****************************/
+   39   1               if(g_write_value[19]==0 && g_write_value[18]%16==0)//十分钟
+   40   1              {
+   41   2                      mem_date++;     
+   42   2                      if(mem_date%g_write_value[21]==0)//到达数据存储间隔 
+   43   2                      {                
+   44   3                               meter_data[g_write_value[20]*7+0]=g_write_value[7];//总用水量3字节
+   45   3                               meter_data[g_write_value[20]*7+1]=g_write_value[8];
+   46   3                               meter_data[g_write_value[20]*7+2]=g_write_value[9];
+   47   3                               meter_data[g_write_value[20]*7+3]=g_write_value[15];//月
+   48   3                               meter_data[g_write_value[20]*7+4]=g_write_value[16];//日
+   49   3                               meter_data[g_write_value[20]*7+5]=g_write_value[17];//时
+   50   3                               meter_data[g_write_value[20]*7+6]=g_write_value[18];//分
+   51   3                               g_write_value[20]++;//已冻结条数
+   52   3                               if(g_write_value[20]>47) g_write_value[20]=0;
+   53   3                      }
+   54   2                      if(mem_date==289)  mem_date=0;
+   55   2              }
+   56   1      //*************************上传间隔***********************************/
+   57   1                              if(g_write_value[34]==0)//间隔为0  每天上传
+C251 COMPILER V5.04b,  main                                                                25/08/18  14:15:49  PAGE 2   
+
+   58   1                              {
+   59   2                                      if(g_write_value[17]==g_write_value[35]  && g_write_value[18]==g_write_value[36] && g_write_value[19]
+             -==0)//到达设置的时间
+   60   2                                      {
+   61   3                                              if(g_write_value[20]>0)  
+   62   3                                              {       //g_write_value[46]: 0 开始进行数据传输 1 发送数据没收到平台确认 2 发送数据成功 
+   63   4                                                      g_write_value[46]=0;
+   64   4                                                      NB_Timing_Send(); //第一次发送
+   65   4                                                      if(g_write_value[46]==0)//上线失败 重发一次
+   66   4                                                      {
+   67   5                                                              NB_Timing_Send();//第二次发送
+   68   5                                                      }               
+   69   4                                              } 
+   70   3                                              else NB_Send(); 
+   71   3                                      }                                       
+   72   2                              }
+   73   1                              else//间隔不为零
+   74   1                              {
+   75   2                                      if(g_write_value[19]==0 && g_write_value[18]==0)// 一小时
+   76   2                                      {
+   77   3                                              date++; 
+   78   3                                              if((date%g_write_value[34])==0)//达到间隔时间,且上次发送失败
+   79   3                                              {
+   80   4                                                      if(g_write_value[20]>0)  
+   81   4                                                      {       //g_write_value[46]: 0 开始进行数据传输 1 发送数据没收到平台确认 2 发送数据成功 
+   82   5                                                              g_write_value[46]=0;
+   83   5                                                              NB_Timing_Send();//第一次发送
+   84   5                                                              if(g_write_value[46]==0)//上线失败 重发一次
+   85   5                                                              {
+   86   6                                                                      NB_Timing_Send();//第二次发送
+   87   6                                                              }               
+   88   5                                                      } 
+   89   4                                                      else NB_Send();
+   90   4                                              }
+   91   3                                              if(date==24) date=0; 
+   92   3                                      }       
+   93   2                              }
+   94   1      //********************** 欠压标志 **************************//
+   95   1      /*  if((P0&BIT1)==0)//P01 低压检测
+   96   1        { 
+   97   1          LCDRAM13 |=0x01; 
+   98   1          lowVoltageTime++;
+   99   1          if((lowVoltageTime>50)&&((lowVoltageFlag&0x02)==0x00)) 
+  100   1          { 
+  101   1            lowVoltageTime=60;
+  102   1            lowVoltageFlag |= 0x01;//低压标识允许显示 
+  103   1            g_write_value[174] |= 0x04;
+  104   1          }
+  105   1        } 
+  106   1        else 
+  107   1        { 
+  108   1          if((g_write_value[174]&0x04)==0x04){ LCDRAM13 |=0x01;   }   
+  109   1          else { LCDRAM13 &=~0x01;  }                      
+  110   1          lowVoltageTime=0;
+  111   1        }*/
+  112   1      //********************** 实时上传 **************************//
+  113   1                        if((P0&BIT2)==0 && (showIP==0x00 || showIP==0x01))    
+  114   1                        {
+  115   2                              key_time++;
+  116   2                              if(key_time>15) key_time=10;
+  117   2                              if(key_time==5)//五秒及时
+  118   2                              {               
+  119   3                                      LCD_Clear(0X00);
+  120   3                                      NB_Send();//数据上传
+  121   3                              }                         
+  122   2                        }
+C251 COMPILER V5.04b,  main                                                                25/08/18  14:15:49  PAGE 3   
+
+  123   1                        else
+  124   1                        {
+  125   2                              key_time=0;
+  126   2                        }
+  127   1      /************************* 干簧干双吸合故障检测 ******************************/
+  128   1                if(((P0&BIT4)==0)&&((P0&BIT5)==0) && flagtype==0) //双吸合                        
+  129   1                { 
+  130   2                          Nodoubletime=0;
+  131   2                          doubletime++;
+  132   2                          if(doubletime>20)//双吸和      
+  133   2                          {     
+  134   3                            flagtype=1;
+  135   3                                g_write_value[23]|=0x80;
+  136   3                                NB_Send();//双吸和报警
+  137   3                                doubletime=0;          
+  138   3                          }  
+  139   2                }
+  140   1                else 
+  141   1                {
+  142   2                              doubletime=0;
+  143   2                          Nodoubletime++;
+  144   2                          if(Nodoubletime>60)   
+  145   2                          { 
+  146   3                                flagtype=0;
+  147   3                                g_write_value[23] &=~0x80;                
+  148   3                          }
+  149   2                }
+  150   1      //*********************** 欠压关阀  *******************************/
+  151   1              if((P4&BIT6)==0 && lowVoltageFlag==0)
+  152   1              {
+  153   2                      lowVoltage++;
+  154   2                      nolowVoltage=0;
+  155   2                      if(lowVoltage>5)
+  156   2                      {
+  157   3                              P0 &=~BIT0;
+  158   3                              FCtrol(1);
+  159   3                              g_write_value[22] |=BIT2;
+  160   3                              NB_Send();
+  161   3                              lowVoltageFlag=1;       
+  162   3                      }       
+  163   2              }
+  164   1              else if((P4&BIT6) && lowVoltageFlag)
+  165   1              {
+  166   2                      lowVoltage=0;
+  167   2                      nolowVoltage++;
+  168   2                      if(nolowVoltage>10 && lowVoltageFlag)
+  169   2                      {
+  170   3                              P0 |=BIT0;
+  171   3                              lowVoltageFlag=0;
+  172   3                              g_write_value[22] &=~BIT2;
+  173   3                              FCtrol(0);
+  174   3                              ADC_Read();
+  175   3                      }                       
+  176   2              }
+  177   1              
+  178   1      //*********************** 20秒 回到初始界面 *******************************/
+  179   1                returntime++;
+  180   1                if(returntime==10)
+  181   1                {
+  182   2                        returntime=0;
+  183   2                        showIP=0;
+  184   2                        Show();
+  185   2                }
+  186   1      //*********************** 每天存储一次数据 *******************************/
+  187   1              if(g_write_value[17]==0 && g_write_value[18]==0 && g_write_value[19]==0)        
+  188   1              {
+C251 COMPILER V5.04b,  main                                                                25/08/18  14:15:49  PAGE 4   
+
+  189   2                       Write_SegC(); 
+  190   2                       _nop_();_nop_();_nop_();_nop_();       
+  191   2              }
+  192   1      //*********************** 每月阀控两次 *******************************/
+  193   1              if(g_write_value[17]==0x10 && g_write_value[18]==0x10 && g_write_value[19]==0x10 && (g_write_value[16]==
+             -0x05 || g_write_value[16]==0x15 || g_write_value[16]==0x25))
+  194   1              {
+  195   2                      FCtrol(0);
+  196   2                      FCtrol(1);
+  197   2                      FCtrol(0);              
+  198   2              }
+  199   1      }
+  200          //************主函数***********//
+  201          void main(void)
+  202          {
+  203   1          Set_DCO();
+  204   1              Port_Init();
+  205   1              RNG_Time();
+  206   1              LCD_Init();     
+  207   1              Read_SegC();
+  208   1              if(g_write_value[47]!=C_DATA[47])
+  209   1              {
+  210   2                   Write_SegC();
+  211   2              }
+  212   1              else Flash_Read_Write(); 
+  213   1          RTCInit();
+  214   1              InitData();
+  215   1              EA = 1;
+  216   1              ADC_Read();
+  217   1          NB_Close(2);
+  218   1              InitData();
+  219   1              WDTCLKIRC;    ////WDTCLKX32;WDT时钟源选择内部32K        
+  220   1          WDTCON = WDT_8S; //WDT选择8秒复位           
+  221   1          WDTEAT;
+  222   1              LCD_Clear(0XFF);//满屏
+  223   1          CDMA_time=2;
+  224   1              while(CDMA_time);//等待2秒
+  225   1              FCtrol(0);
+  226   1              FCtrol(1);
+  227   1              FCtrol(0);      
+  228   1              LCDRAM3=LCDRAM5=LCDRAM7=0x40;
+  229   1              NB_Send2();
+  230   1              Show();
+  231   1              while(1)
+  232   1              { 
+  233   2                Meter_Time();
+  234   2                if(RX0_flag==2) RX0_read();
+  235   2                LPMIN;                                           
+  236   2                _nop_();_nop_();
+  237   2                _nop_();_nop_();         
+  238   2              }
+  239   1      }
+  240          
+
+
+Module Information          Static   Overlayable
+------------------------------------------------
+  code size            =      1024     ------
+  ecode size           =    ------     ------
+  data size            =    ------     ------
+  idata size           =    ------     ------
+  pdata size           =    ------     ------
+  xdata size           =    ------     ------
+  xdata-const size     =    ------     ------
+  edata size           =    ------     ------
+  bit size             =    ------     ------
+  ebit size            =    ------     ------
+C251 COMPILER V5.04b,  main                                                                25/08/18  14:15:49  PAGE 5   
+
+  bitaddressable size  =    ------     ------
+  ebitaddressable size =    ------     ------
+  far data size        =    ------     ------
+  huge data size       =    ------     ------
+  const size           =    ------     ------
+  hconst size          =    ------     ------
+End of Module Information.
+
+
+C251 COMPILATION COMPLETE.  0 WARNING(S),  0 ERROR(S)

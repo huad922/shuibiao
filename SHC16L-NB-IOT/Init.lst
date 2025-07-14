@@ -1,0 +1,205 @@
+C251 COMPILER V5.04b,  Init                                                                07/08/17  14:10:25  PAGE 1   
+
+
+C251 COMPILER V5.04b, COMPILATION OF MODULE Init
+OBJECT MODULE PLACED IN Init.obj
+COMPILER INVOKED BY: d:\Keil\C251\BIN\C251.EXE SRC\Init.c XSMALL BROWSE DEBUG PRINT(.\Init.lst) OBJECT(Init.obj) 
+
+stmt  level    source
+
+    1          #include "r_cg_macrodriver.h"
+*** ERROR C318 IN LINE 1 OF SRC\Init.c: can't open file 'r_cg_macrodriver.h'
+    2          #include "r_cg_userdefine.h"
+*** ERROR C318 IN LINE 2 OF SRC\Init.c: can't open file 'r_cg_userdefine.h'
+    3          #include "r_cg_lcd.h"
+*** ERROR C318 IN LINE 3 OF SRC\Init.c: can't open file 'r_cg_lcd.h'
+    4          
+    5          void InitData(void)    
+    6          {
+    7   1        firstprice =(unsigned int)g_write_value[150]*256+g_write_value[149]; 
+*** ERROR C67 IN LINE 7 OF SRC\Init.c: 'firstprice': undefined identifier
+*** ERROR C67 IN LINE 7 OF SRC\Init.c: 'g_write_value': undefined identifier
+*** ERROR C67 IN LINE 7 OF SRC\Init.c: 'g_write_value': undefined identifier
+    8   1        secondprice=(unsigned int)g_write_value[152]*256+g_write_value[151];
+*** ERROR C67 IN LINE 8 OF SRC\Init.c: 'secondprice': undefined identifier
+*** ERROR C67 IN LINE 8 OF SRC\Init.c: 'g_write_value': undefined identifier
+*** ERROR C67 IN LINE 8 OF SRC\Init.c: 'g_write_value': undefined identifier
+    9   1        thirdprice =(unsigned int)g_write_value[154]*256+g_write_value[153]; 
+*** ERROR C67 IN LINE 9 OF SRC\Init.c: 'thirdprice': undefined identifier
+*** ERROR C67 IN LINE 9 OF SRC\Init.c: 'g_write_value': undefined identifier
+*** ERROR C67 IN LINE 9 OF SRC\Init.c: 'g_write_value': undefined identifier
+   10   1       
+   11   1        secondamount=(unsigned int)g_write_value[156]*256+g_write_value[155];
+*** ERROR C67 IN LINE 11 OF SRC\Init.c: 'secondamount': undefined identifier
+*** ERROR C67 IN LINE 11 OF SRC\Init.c: 'g_write_value': undefined identifier
+*** ERROR C67 IN LINE 11 OF SRC\Init.c: 'g_write_value': undefined identifier
+   12   1        thirdamount =(unsigned int)g_write_value[158]*256+g_write_value[157];  
+*** ERROR C67 IN LINE 12 OF SRC\Init.c: 'thirdamount': undefined identifier
+*** ERROR C67 IN LINE 12 OF SRC\Init.c: 'g_write_value': undefined identifier
+*** ERROR C67 IN LINE 12 OF SRC\Init.c: 'g_write_value': undefined identifier
+   13   1        
+   14   1        purchase=((unsigned long)g_write_value[135]*65536+(unsigned long)g_write_value[134]*256+(unsigned long)
+             -g_write_value[133])*1000;
+*** ERROR C67 IN LINE 14 OF SRC\Init.c: 'purchase': undefined identifier
+*** ERROR C67 IN LINE 14 OF SRC\Init.c: 'g_write_value': undefined identifier
+*** ERROR C67 IN LINE 14 OF SRC\Init.c: 'g_write_value': undefined identifier
+*** ERROR C67 IN LINE 14 OF SRC\Init.c: 'g_write_value': undefined identifier
+   15   1        
+   16   1        benyueamount=(unsigned int)g_write_value[144]*256+g_write_value[143];
+*** ERROR C67 IN LINE 16 OF SRC\Init.c: 'benyueamount': undefined identifier
+*** ERROR C67 IN LINE 16 OF SRC\Init.c: 'g_write_value': undefined identifier
+*** ERROR C67 IN LINE 16 OF SRC\Init.c: 'g_write_value': undefined identifier
+   17   1        benyuemoney =(unsigned long)g_write_value[147]*65536+(unsigned int)g_write_value[146]*256+g_write_value
+             -[145];
+*** ERROR C67 IN LINE 17 OF SRC\Init.c: 'benyuemoney': undefined identifier
+*** ERROR C67 IN LINE 17 OF SRC\Init.c: 'g_write_value': undefined identifier
+*** ERROR C67 IN LINE 17 OF SRC\Init.c: 'g_write_value': undefined identifier
+*** ERROR C67 IN LINE 17 OF SRC\Init.c: 'g_write_value': undefined identifier
+   18   1       
+   19   1        consumed_money=(unsigned long)g_write_value[139]*16777216+(unsigned long)g_write_value[138]*65536+(unsi
+             -gned int)g_write_value[137]*256+g_write_value[136];
+*** ERROR C67 IN LINE 19 OF SRC\Init.c: 'consumed_money': undefined identifier
+*** ERROR C67 IN LINE 19 OF SRC\Init.c: 'g_write_value': undefined identifier
+*** ERROR C67 IN LINE 19 OF SRC\Init.c: 'g_write_value': undefined identifier
+*** ERROR C67 IN LINE 19 OF SRC\Init.c: 'g_write_value': undefined identifier
+*** ERROR C67 IN LINE 19 OF SRC\Init.c: 'g_write_value': undefined identifier
+   20   1        consumed_water=(unsigned long)g_write_value[142]*65536+(unsigned long)g_write_value[141]*256+(unsigned 
+             -long)g_write_value[140];
+*** ERROR C67 IN LINE 20 OF SRC\Init.c: 'consumed_water': undefined identifier
+C251 COMPILER V5.04b,  Init                                                                07/08/17  14:10:25  PAGE 2   
+
+*** ERROR C67 IN LINE 20 OF SRC\Init.c: 'g_write_value': undefined identifier
+*** ERROR C67 IN LINE 20 OF SRC\Init.c: 'g_write_value': undefined identifier
+*** ERROR C67 IN LINE 20 OF SRC\Init.c: 'g_write_value': undefined identifier
+   21   1        
+   22   1        if(purchase<consumed_money)
+*** ERROR C67 IN LINE 22 OF SRC\Init.c: 'purchase': undefined identifier
+*** ERROR C67 IN LINE 22 OF SRC\Init.c: 'consumed_money': undefined identifier
+   23   1        {
+   24   2          g_write_value[148]=1;
+*** ERROR C67 IN LINE 24 OF SRC\Init.c: 'g_write_value': undefined identifier
+   25   2          remain=consumed_money-purchase;  
+*** ERROR C67 IN LINE 25 OF SRC\Init.c: 'remain': undefined identifier
+*** ERROR C67 IN LINE 25 OF SRC\Init.c: 'consumed_money': undefined identifier
+*** ERROR C67 IN LINE 25 OF SRC\Init.c: 'purchase': undefined identifier
+   26   2        }
+   27   1        else
+   28   1        {
+   29   2          g_write_value[148]=0;
+*** ERROR C67 IN LINE 29 OF SRC\Init.c: 'g_write_value': undefined identifier
+   30   2          remain=purchase-consumed_money;               
+*** ERROR C67 IN LINE 30 OF SRC\Init.c: 'remain': undefined identifier
+*** ERROR C67 IN LINE 30 OF SRC\Init.c: 'purchase': undefined identifier
+*** ERROR C67 IN LINE 30 OF SRC\Init.c: 'consumed_money': undefined identifier
+   31   2        }
+   32   1        
+   33   1        alert=(unsigned int)g_write_value[160]*256+g_write_value[159];
+*** ERROR C67 IN LINE 33 OF SRC\Init.c: 'alert': undefined identifier
+*** ERROR C67 IN LINE 33 OF SRC\Init.c: 'g_write_value': undefined identifier
+*** ERROR C67 IN LINE 33 OF SRC\Init.c: 'g_write_value': undefined identifier
+   34   1        upperlimit=(unsigned int)g_write_value[162]*256+g_write_value[161];
+*** ERROR C67 IN LINE 34 OF SRC\Init.c: 'upperlimit': undefined identifier
+*** ERROR C67 IN LINE 34 OF SRC\Init.c: 'g_write_value': undefined identifier
+*** ERROR C67 IN LINE 34 OF SRC\Init.c: 'g_write_value': undefined identifier
+   35   1      }
+   36          
+   37          void FCtrol(unsigned char order) 
+   38          {
+   39   1        P14.5 = 1;
+*** ERROR C67 IN LINE 39 OF SRC\Init.c: 'P14': undefined identifier
+*** ERROR C25 IN LINE 39 OF SRC\Init.c: syntax error near '.5'
+   40   1        Delay(10);
+*** ERROR C25 IN LINE 40 OF SRC\Init.c: syntax error near '10'
+   41   1        FDtime=10;
+   42   1        ClearScreen();
+   43   1        switch(order)
+*** ERROR C25 IN LINE 43 OF SRC\Init.c: syntax error near 'switch'
+   44   1        {
+*** ERROR C103 IN LINE 44 OF SRC\Init.c: 'order': illegal function definition (missing ';' ?)
+   45   1          case 0:                         
+   46   1            if((FOflag==0)&&(FCflag==0))
+   47   1            {
+   48   1              while(FDtime>0)
+   49   1              { 
+   50   1                FOpen; 
+   51   1                ShowOpen();           
+   52   1                SEG6 |= digit1[FDtime-1];
+   53   1                SEG7 |= digit2[FDtime-1];
+   54   1              }
+   55   1            }
+   56   1            else
+   57   1            {
+   58   1              while((FOflag==1)&&(FDtime>0))
+   59   1              { 
+   60   1                FOpen; 
+   61   1                ShowOpen();   
+   62   1                SEG6 = digit1[FDtime-1];
+C251 COMPILER V5.04b,  Init                                                                07/08/17  14:10:25  PAGE 3   
+
+   63   1                SEG7 = digit2[FDtime-1];
+   64   1              } 
+   65   1            }
+   66   1            
+   67   1            FMflag=17;
+   68   1            if(FDtime==0){ g_write_value[175]|=0x40;}
+   69   1            else{ g_write_value[175]&=~0x40; }
+   70   1            
+   71   1          break;
+   72   1          case 1:                      
+   73   1            if((FOflag==0)&&(FCflag==0))
+   74   1            {
+   75   1              while(FDtime>0)
+   76   1              { 
+   77   1                FClose; 
+   78   1                ShowClose(); 
+   79   1                SEG6 = digit1[FDtime-1];
+   80   1                SEG7 = digit2[FDtime-1]; 
+   81   1              }
+   82   1            }
+   83   1            else
+   84   1            {
+   85   1              while((FCflag==1)&&(FDtime>0))
+   86   1              { 
+   87   1                FClose; 
+   88   1                ShowClose(); 
+   89   1                SEG6 = digit1[FDtime-1];
+   90   1                SEG7 = digit2[FDtime-1]; 
+   91   1              } 
+   92   1            }
+   93   1            
+   94   1            FMflag=18;
+   95   1            if(FDtime==0){ g_write_value[175]|=0x20;}
+   96   1            else{ g_write_value[175]&=~0x20; }
+   97   1          break;
+   98   1        }
+   99   1        
+  100   1        FStop;
+  101   1        P14.5 = 0;
+  102   1        
+  103   1        if((g_write_value[175]|0x1F)!=0x1F){ SEG1 |=0x04; }
+  104   1        else{  SEG1 &=~0x04; }
+  105   1        if((g_write_value[175]|0x9F)!=0x9F){ SEG2 |=0x08; g_write_value[174]|=0x03; }
+  106   1        else 
+  107   1        { 
+  108   1        SEG2 &=~0x08; 
+  109   1        if(FMflag==17){ g_write_value[174]&=~0x03;  }
+  110   1        else if( FMflag==18 ){ g_write_value[174]&=~0x02;g_write_value[174]|=0x01; } 
+  111   1        }
+  112   1        
+  113   1      }
+  114   1      
+  115   1      
+  116   1      void FCyc(void)   
+  117   1      {
+  118   1        P14.5 = 1;
+  119   1        Delay(10);
+  120   1        if((FOflag==1)&&(FCflag==0)){ FCtrol(0); FCtrol(1); }
+  121   1        else if((FCflag==1)&&(FOflag==0)){ FCtrol(1); FCtrol(0); }
+  122   1        else
+  123   1        { 
+  124   1          if((remain>0)&&(g_write_value[148]==0)){ FCtrol(1); FCtrol(0); }
+  125   1          else { FCtrol(0); FCtrol(1);  } 
+  126   1        }
+  127   1      }
+
+C251 COMPILATION COMPLETE.  0 WARNING(S),  59 ERROR(S)
