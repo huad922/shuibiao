@@ -1,0 +1,167 @@
+C251 COMPILER V5.04b,  Flash                                                               27/11/18  11:34:35  PAGE 1   
+
+
+C251 COMPILER V5.04b, COMPILATION OF MODULE Flash
+OBJECT MODULE PLACED IN Flash.obj
+COMPILER INVOKED BY: d:\Keil\C251\BIN\C251.EXE SRC\Flash.c XSMALL BROWSE DEBUG PRINT(.\Flash.lst) OBJECT(Flash.obj) 
+
+stmt  level    source
+
+    1          #include "Flash.h"
+    2          uchar  g_write_value[48]={
+    3                                       0,0,0,0x05,0x18,0x00,0x00,//0-6 表地址
+    4                                       0x00,0x00,0x00,//7-9 用户总用水量--正向
+    5                                       0x00,0x00,0x00,//10-12 用户总用水量--反向
+    6                                       0x20,0x17,0x10,0x23,0x15,0x20,0x20,//13-19 表上时间
+    7                                           //13   14   15   16   17   18   19
+    8                                           0x00,//20 已冻结数据条数
+    9                                           0x06,//21 数据冻结间隔
+   10                                       0x00,0x00,0x00,//22-24 表状态
+   11                                       0x00,0x00,//25-26 阀门动作次数
+   12                                       0x02,//27 脉冲当量
+   13                                       //112,4,228,148,19,147,
+   14                                           115,28,226,179,23,173,//28-33 IP&PORT
+   15                                       0,//34 上线间隔
+   16                                       0x00,0x00,//35-36 上线时间
+   17                                       0x00,//37 用户状态
+   18                                       0x00,//38 电池电压
+   19                                           0x00,//39 设备参数
+   20                                           0x00,//40 设备状态
+   21                                           0x00,0x00,//41-42 SNR值 
+   22                                           0x00,0x00,0x00,//43-45
+   23                                           0x00,//46 发送标志
+   24                                       0x42//47 程序版本
+   25                                          };  
+   26          uchar C_DATA[150];
+   27          uchar meter_data[360];// 
+   28          /******************************************
+   29          设备参数        g_write_value[39]
+   30          BIT7                            BIT6                                                                    BIT5 BIT4 BIT3 BIT2 BIT1 BIT0
+   31          是否带阀 1带 0不带      外壳 1
+   32          
+   33          设备状态        g_write_value[40]
+   34          BIT7            BIT6 BIT5 BIT4 BIT3 BIT2 BIT1 BIT0
+   35           
+   36          
+   37          *******************************************/
+   38          //相关变量
+   39          unsigned short mem_date=0;
+   40          unsigned char date;
+   41          unsigned char CDMA_time;//开机等待时间
+   42          unsigned char  showIP;
+   43          unsigned char  showdata[4]; 
+   44           uchar z;    //串口1接收计数 
+   45          unsigned char adc_flag;
+   46          unsigned char flagtype;
+   47          unsigned long consumed_water;   
+   48          unsigned char lowVoltageFlag;
+   49          unsigned char FDcycflag;
+   50          unsigned char FMflag;
+   51            
+   52          unsigned char  returntime;
+   53          unsigned char  FDtime;
+   54          unsigned char  RX0_flag;
+   55          
+   56          unsigned char pul_flag;
+   57          unsigned char FmForceFlag;
+   58          unsigned char FmOrder;
+   59          unsigned char key_time;
+C251 COMPILER V5.04b,  Flash                                                               27/11/18  11:34:35  PAGE 2   
+
+   60          unsigned char time_Flag;
+   61          unsigned char count_time;
+   62          unsigned char doubletime;
+   63          unsigned char Nodoubletime;
+   64          /*******************************************************************************
+   65          * 函  数  名      : Delay
+   66          * 描      述      : 延时函数 1mS
+   67          * 输      入      : 无.
+   68          * 返      回      : 无.
+   69          *******************************************************************************/
+   70          void Delay(unsigned int i)
+   71          {
+   72   1        unsigned int j,k;
+   73   1        for(k=i;k>0;k--)
+   74   1          for(j=0;j<615;j++);
+   75   1      }
+   76          /*******************************************************************************
+   77          * 函  数  名      : Flash_Read_Write
+   78          * 描      述      : 交换设备参数信息
+   79          * 输      入      : 无.
+   80          * 返      回      : 无.
+   81          *******************************************************************************/
+   82          void Flash_Read_Write(void)
+   83          {
+   84   1              uchar i;
+   85   1              for(i=0;i<48;i++)
+   86   1              {
+   87   2                      g_write_value[i]=C_DATA[i];
+   88   2              }
+   89   1      }
+   90          /*******************************************************************************
+   91          * 函  数  名      : Write_SegC
+   92          * 描      述      : 先擦除相应页，然后进行写入操作
+   93          * 输      入      : 无.
+   94          * 返      回      : 无.
+   95          *******************************************************************************/
+   96          void Write_SegC(void)
+   97          {
+   98   1        unsigned char i;
+   99   1        /******擦除最后一页 page63********/
+  100   1        //解锁最后一页
+  101   1        Flash_PL = 0x5a;
+  102   1        Flash_PL = 0xa5;
+  103   1        EF_plock7 |= 0x80;                   
+  104   1        //擦除最后一页page63 
+  105   1        Flash_CTL = 0x02;
+  106   1        *((volatile int *)0x00FF7E00) = 0x1234;       //最后一页地址FF7E00~FF7FFF
+  107   1        while(Flash_CTL&0x10);                                                //等待擦除结束
+  108   1         /******开始写入********/
+  109   1        Flash_CTL =0x01;                                                              //写最后一页FLASH
+  110   1        for(i=0;i<48;i++)
+  111   1        {
+  112   2              *((volatile char *)(0xff7e00 + i)) = g_write_value[i];
+  113   2        }
+  114   1        while(Flash_CTL&0x10);
+  115   1      }
+  116          /*******************************************************************************
+  117          * 函  数  名      : Read_SegC
+  118          * 描      述      : 读Flash
+  119          * 输      入      : 无.
+  120          * 返      回      : 无.
+  121          *******************************************************************************/
+  122          void Read_SegC(void)
+  123          {
+  124   1        unsigned char i;
+  125   1        Flash_CTL =0x00;                                                              //读最后一页FLASH
+C251 COMPILER V5.04b,  Flash                                                               27/11/18  11:34:35  PAGE 3   
+
+  126   1        for(i=0;i<48;i++)
+  127   1        {
+  128   2              C_DATA[i]= *((volatile char *)(0xff7e00 + i));  //将最后一页数据通过串口发送
+  129   2        }
+  130   1      }
+
+
+Module Information          Static   Overlayable
+------------------------------------------------
+  code size            =       144     ------
+  ecode size           =    ------     ------
+  data size            =    ------     ------
+  idata size           =    ------     ------
+  pdata size           =    ------     ------
+  xdata size           =    ------     ------
+  xdata-const size     =    ------     ------
+  edata size           =       588     ------
+  bit size             =    ------     ------
+  ebit size            =    ------     ------
+  bitaddressable size  =    ------     ------
+  ebitaddressable size =    ------     ------
+  far data size        =    ------     ------
+  huge data size       =    ------     ------
+  const size           =    ------     ------
+  hconst size          =        58     ------
+End of Module Information.
+
+
+C251 COMPILATION COMPLETE.  0 WARNING(S),  0 ERROR(S)

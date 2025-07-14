@@ -1,0 +1,138 @@
+C251 COMPILER V5.04b,  Calculate                                                           27/11/18  11:34:35  PAGE 1   
+
+
+C251 COMPILER V5.04b, COMPILATION OF MODULE Calculate
+OBJECT MODULE PLACED IN Calculate.obj
+COMPILER INVOKED BY: d:\Keil\C251\BIN\C251.EXE SRC\Calculate.c XSMALL BROWSE DEBUG PRINT(.\Calculate.lst) OBJECT(Calcula
+                    -te.obj) 
+
+stmt  level    source
+
+    1          #include "Flash.h"
+    2          #include "Calculate.h"
+    3          //#include "LCD.h"
+    4          //===============================================
+    5          //宏定义
+    6          //===============================================
+    7          #define RNGTESTTIMES           (5)
+    8          #define RNGCTRLPWRON           (0x01)
+    9          #define RNGCTRLRUN             (0x02)
+   10          
+   11          #define RNGMODECNTOFFSERT      (2)
+   12          #define RNGMODEFDBKOFFSERT     (1)
+   13          #define RNGMODELOADOFFSERT     (0)
+   14          #define RNGMODECNT0            (0)
+   15          #define RNGMODECNT8            (1)
+   16          #define RNGMODECNT16           (2)
+   17          #define RNGMODECNT32           (3)
+   18          #define RNGMODECNT64           (4)
+   19          #define RNGMODECNT128          (5)
+   20          #define RNGMODECNT256          (6)
+   21          #define RNGMODEXORON           (1)
+   22          #define RNGMODEXOROFF          (0)
+   23          #define RNGMODELOADNEW             (1)
+   24          #define RNGMODELOADOLD             (0)
+   25          /*******************************************************************************
+   26          * 函  数  名      : InitData
+   27          * 描      述      : 数据初始化
+   28          * 输      入      : 无.
+   29          * 返      回      : 无.
+   30          *******************************************************************************/
+   31          void InitData(void)    
+   32          {
+   33   1        consumed_water=(unsigned long)g_write_value[9]*65536+(unsigned long)g_write_value[8]*256+(unsigned long
+             -)g_write_value[7];
+   34   1        showIP=0;
+   35   1      }
+   36          
+   37          /*******************************************************************************
+   38          * 函  数  名      : calculate
+   39          * 描      述      : 数据计算，后显示
+   40          * 输      入      : 无
+   41          * 返      回      : 无.
+   42          *******************************************************************************/
+   43          void calculate(void)
+   44          {
+   45   1              
+   46   1       if(pul_flag==1)
+   47   1          {
+   48   2            pul_flag=0;                                                
+   49   2            consumed_water++; 
+   50   2            g_write_value[9]=(uint8_t)(consumed_water/65536);
+   51   2            g_write_value[8]=(uint8_t)(consumed_water/256%256);
+   52   2            g_write_value[7]=(uint8_t)(consumed_water%256);
+   53   2            showIP=0;
+   54   2          }
+   55   1      }
+   56          /*******************************************************************************
+   57          * 函  数  名      : RNG_Time
+C251 COMPILER V5.04b,  Calculate                                                           27/11/18  11:34:35  PAGE 2   
+
+   58          * 描      述      : 产生随机时间
+   59          * 输      入      : 无
+   60          * 返      回      : 无.
+   61          设置的上报时间后两个小时内随机
+   62          *******************************************************************************/
+   63          void RNG_Time(void)
+   64          {
+   65   1      unsigned char tmpReg;
+   66   1      unsigned char rngdata;
+   67   1      unsigned char time_temp,time_hour,time_min;
+   68   1              time_min=(g_write_value[36]/16)*10+g_write_value[36]%16;
+   69   1              time_hour=(g_write_value[35]/16)*10+g_write_value[35]%16;
+   70   1               //1. Enable the RNG power
+   71   1          tmpReg = RNGCtrlReg;
+   72   1          RNGCtrlReg = tmpReg | RNGCTRLPWRON;
+   73   1          //2. Set the mode
+   74   1          RNGModeReg = (RNGMODECNT0 << RNGMODECNTOFFSERT)     // 
+   75   1                         | (RNGMODEXORON << RNGMODEFDBKOFFSERT)       //
+   76   1                                 | (RNGMODELOADNEW << RNGMODELOADOFFSERT);
+   77   1          tmpReg = RNGCtrlReg;
+   78   1          //3. Generate the RNG data
+   79   1          RNGCtrlReg = tmpReg | RNGCTRLRUN;
+   80   1          //4. Read the RNG data
+   81   1          while(0 != (RNGCtrlReg & RNGCTRLRUN))
+   82   1          {
+   83   2          }
+   84   1          rngdata = RNGData0Reg3;
+   85   1          /*rngdata[2] = RNGData0Reg2;
+   86   1          rngdata[3] = RNGData0Reg3;
+   87   1          rngdata[4] = RNGData1Reg0;
+   88   1          rngdata[5] = RNGData1Reg1;
+   89   1          rngdata[6] = RNGData1Reg2;
+   90   1          rngdata[7] = RNGData1Reg3;*/
+   91   1          //5. Disable the RNG
+   92   1          RNGCtrlReg = 0x00;
+   93   1              time_temp=(rngdata*15)/32;
+   94   1              time_min=time_min+time_temp;
+   95   1              time_min=time_temp%60;
+   96   1              time_hour=time_hour+time_temp/60;
+   97   1              if(time_hour>23)time_hour=time_hour-24;;
+   98   1              g_write_value[36]=(time_min/10)*16+time_min%10;
+   99   1              g_write_value[35]=(time_hour/10)*16+time_hour%10;
+  100   1      
+  101   1      }
+
+
+Module Information          Static   Overlayable
+------------------------------------------------
+  code size            =       349     ------
+  ecode size           =    ------     ------
+  data size            =    ------     ------
+  idata size           =    ------     ------
+  pdata size           =    ------     ------
+  xdata size           =    ------     ------
+  xdata-const size     =    ------     ------
+  edata size           =    ------     ------
+  bit size             =    ------     ------
+  ebit size            =    ------     ------
+  bitaddressable size  =    ------     ------
+  ebitaddressable size =    ------     ------
+  far data size        =    ------     ------
+  huge data size       =    ------     ------
+  const size           =    ------     ------
+  hconst size          =    ------     ------
+End of Module Information.
+
+
+C251 COMPILATION COMPLETE.  0 WARNING(S),  0 ERROR(S)

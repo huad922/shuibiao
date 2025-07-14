@@ -1,0 +1,12 @@
+"START251.obj",
+"main.obj",
+"AD.obj",
+"Flash.obj",
+"Uart.obj",
+"RTC.obj",
+"HT1621.obj",
+"Calculate.obj" 
+TO "IR" 
+CASE 
+CLASSES (EDATA (0x0-0xFFF), 
+HDATA (0x0-0xFFF)) 

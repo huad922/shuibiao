@@ -1,0 +1,119 @@
+C251 COMPILER V5.04b,  HT1621                                                              27/11/18  11:34:35  PAGE 1   
+
+
+C251 COMPILER V5.04b, COMPILATION OF MODULE HT1621
+OBJECT MODULE PLACED IN HT1621.obj
+COMPILER INVOKED BY: d:\Keil\C251\BIN\C251.EXE SRC\HT1621.c XSMALL BROWSE DEBUG PRINT(.\HT1621.lst) OBJECT(HT1621.obj) 
+
+stmt  level    source
+
+    1          #include "Flash.h"
+    2          #include "sys.h"
+    3          //#include "LCD.h"
+    4          #include "Calculate.h"
+    5          #include "intrins.h"
+    6          
+    7          /*******************************************************************************
+    8          * 函  数  名      : Port_Init
+    9          * 描      述      : 初始化1621状态
+   10          * 输      入      : 无.
+   11          * 返      回      : 无.
+   12          *******************************************************************************/
+   13          void Port_Init(void)
+   14          {
+   15   1              //输出引脚
+   16   1              P0_DIR &=~BIT3;
+   17   1              P1_DIR &=~(BIT0+BIT1+BIT2+BIT5+BIT3+BIT4); 
+   18   1              P2_DIR=P3_DIR=0x00;//P2/P3  作为LCD引脚
+   19   1              P4_DIR &=~(BIT0+BIT1+BIT2+BIT3+BIT4+BIT5+BIT7);
+   20   1              //输入引脚
+   21   1              P0_DIR |=(BIT1+BIT2+BIT4+BIT5+BIT6);
+   22   1              P4_DIR |=BIT6;
+   23   1              //64Pin 无以下引脚
+   24   1          P5_DIR &=~(BIT2+BIT3+BIT4);
+   25   1              P6_DIR =P7_DIR =P8_DIR =0x00;
+   26   1              P5 &=~(BIT2+BIT3+BIT4);
+   27   1              P6=P7=P8=0x00; 
+   28   1              //预留引脚--输出低电平
+   29   1              P1 &=~(BIT0+BIT1+BIT2+BIT5+BIT3+BIT4);
+   30   1              P2=P3=0;
+   31   1              P4 &=~(BIT0+BIT1+BIT2+BIT3+BIT4+BIT5+BIT7);
+   32   1              _nop_();_nop_();
+   33   1              _nop_();_nop_();
+   34   1              //相关引脚初始化
+   35   1              P0 |=BIT3;//NB_Power
+   36   1              _nop_();_nop_();
+   37   1              _nop_();_nop_();
+   38   1              //按键--输入
+   39   1          P0_INT_SEL=0x00;//P0脚 边沿触发
+   40   1              P0_EDGE_SEL=0X00;//P0脚 下降沿触发
+   41   1              P0_IE |=(BIT6+BIT5+BIT4+BIT1+BIT2);
+   42   1          P4_INT_SEL=0x00;//P4脚 边沿触发
+   43   1              P4_EDGE_SEL=0X00;//P4脚 下降沿触发
+   44   1              P4_IE |=BIT6;//P4脚
+   45   1          //P5_INT_SEL=0x00;//P4脚 边沿触发
+   46   1              //P5_EDGE_SEL=0X00;//P4脚 下降沿触发
+   47   1              //P5_IE |=BIT0;//P4脚
+   48   1              AIE     |=PTE; 
+   49   1      }
+   50          /*******************************************************************************
+   51          按键中断函数
+   52          *******************************************************************************/
+   53          void INTERRUPT_PORT(void) interrupt 8
+   54          {
+   55   1               if(P0_IFG & BIT2)//KEY
+   56   1                {                     
+   57   2                        returntime=0;
+   58   2                        showIP++;
+   59   2                        if(showIP>4) showIP=0;
+C251 COMPILER V5.04b,  HT1621                                                              27/11/18  11:34:35  PAGE 2   
+
+   60   2                        //if(!z && (g_write_value[39]&BIT7)) Show();
+   61   2                }
+   62   1                if(P0_IFG & BIT5)//S2
+   63   1                {                     
+   64   2                        calculate();
+   65   2                }
+   66   1                if(P0_IFG & BIT4)//S1
+   67   1                {                     
+   68   2                       pul_flag=1;
+   69   2                }
+   70   1                if(P0_IFG & BIT6)//S3
+   71   1                {                     
+   72   2                       
+   73   2                }
+   74   1                if(P0_IFG & BIT1)//RX中断
+   75   1                {                     
+   76   2                        RX0_flag=2;
+   77   2                }
+   78   1                if(P4_IFG & BIT6)//欠压
+   79   1                {                     
+   80   2                      
+   81   2                }
+   82   1               P0_IFG =0x00;
+   83   1               P4_IFG =0x00;
+   84   1      }
+
+
+Module Information          Static   Overlayable
+------------------------------------------------
+  code size            =       264     ------
+  ecode size           =    ------     ------
+  data size            =    ------     ------
+  idata size           =    ------     ------
+  pdata size           =    ------     ------
+  xdata size           =    ------     ------
+  xdata-const size     =    ------     ------
+  edata size           =    ------     ------
+  bit size             =    ------     ------
+  ebit size            =    ------     ------
+  bitaddressable size  =    ------     ------
+  ebitaddressable size =    ------     ------
+  far data size        =    ------     ------
+  huge data size       =    ------     ------
+  const size           =    ------     ------
+  hconst size          =    ------     ------
+End of Module Information.
+
+
+C251 COMPILATION COMPLETE.  0 WARNING(S),  0 ERROR(S)

@@ -1,0 +1,75 @@
+C251 COMPILER V5.04b,  AD                                                                  27/11/18  11:34:34  PAGE 1   
+
+
+C251 COMPILER V5.04b, COMPILATION OF MODULE AD
+OBJECT MODULE PLACED IN AD.obj
+COMPILER INVOKED BY: d:\Keil\C251\BIN\C251.EXE SRC\AD.c XSMALL BROWSE DEBUG PRINT(.\AD.lst) OBJECT(AD.obj) 
+
+stmt  level    source
+
+    1          #include "Flash.h"
+    2          #include "intrins.h"
+    3          unsigned long adc_result;
+    4          /*******************************************************************************
+    5          * 函  数  名      : ADC_Read
+    6          * 描      述      : 开始AD转换
+    7          * 输      入      : 无.
+    8          * 返      回      : 无.
+    9          *******************************************************************************/
+   10          void ADC_Read(void)
+   11          {
+   12   1        adc_flag=1;
+   13   1        BGRC |= BGREN;                                                                //打开BGR 基准电压发生器
+   14   1        ADC1 = ADCVREF_2P5 +0x06+ ADCEN+ADCCH_0;                  //选择2.5V基准电压， 采样时钟不分频 ADC使能 
+   15   1        P0_SEL0 |=BIT0;
+   16   1        ADC3 = CAL3&0x38;                                                                     //读入2.5V基准电压出厂校准值
+   17   1        ADC3 |= ADCTSEN;                                                      
+   18   1        ADC2 =  ADCBUF +0xc0 +ADCMODE_S + ADCALIGN_R;         //打开VIN BUF 连单次采样模式 结果右对齐
+   19   1        Delay(10);                                                                    //等待AD启动稳定
+   20   1        ADC2 |= ADCSTART;                                                             //启动转换
+   21   1        AIE |= BIT5;
+   22   1        while(adc_flag);
+   23   1        ADC2 &=~ADCSTART;
+   24   1        BGRC &=~BGREN;Delay(1);
+   25   1        P0_SEL0 &=~BIT0;
+   26   1        ADC1=ADC2=ADC3=0x00;
+   27   1      }
+   28          //===============================================
+   29          //ADC  中断
+   30          //===============================================
+   31          void INTERRUPT_ADC(void) interrupt 13
+   32          {
+   33   1              adc_result=ADCH;
+   34   1              adc_result=adc_result<<8;
+   35   1              adc_result=adc_result+ADCL;
+   36   1              adc_result=(adc_result*125)/2048;
+   37   1              g_write_value[38]=adc_result;//(adc_result*25)/232;
+   38   1              adc_flag=0;
+   39   1              AIF &= ~BIT5;                                                            //清AD转换中断标志
+   40   1      }
+
+
+Module Information          Static   Overlayable
+------------------------------------------------
+  code size            =       200     ------
+  ecode size           =    ------     ------
+  data size            =    ------     ------
+  idata size           =    ------     ------
+  pdata size           =    ------     ------
+  xdata size           =    ------     ------
+  xdata-const size     =    ------     ------
+  edata size           =         4     ------
+  bit size             =    ------     ------
+  ebit size            =    ------     ------
+  bitaddressable size  =    ------     ------
+  ebitaddressable size =    ------     ------
+  far data size        =    ------     ------
+  huge data size       =    ------     ------
+  const size           =    ------     ------
+  hconst size          =    ------     ------
+C251 COMPILER V5.04b,  AD                                                                  27/11/18  11:34:34  PAGE 2   
+
+End of Module Information.
+
+
+C251 COMPILATION COMPLETE.  0 WARNING(S),  0 ERROR(S)
